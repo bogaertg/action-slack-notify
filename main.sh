@@ -31,7 +31,10 @@ if [[ -n "$VAULT_GITHUB_TOKEN" ]] || [[ -n "$VAULT_TOKEN" ]]; then
 fi
 
 if [[ -f "$hosts_file" ]]; then
-	hostname=$(cat "$hosts_file" | shyaml get-value "$GITHUB_BRANCH.hostname")
+	hostname=$(cat "$hosts_file" | shyaml get-value "$
+	
+	
+	.hostname")
 	user=$(cat "$hosts_file" | shyaml get-value "$GITHUB_BRANCH.user")
 	export HOST_NAME="\`$user@$hostname\`"
 	export DEPLOY_PATH=$(cat "$hosts_file" | shyaml get-value "$GITHUB_BRANCH.deploy_path")
