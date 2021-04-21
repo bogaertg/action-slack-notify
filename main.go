@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -19,11 +20,16 @@ const (
 	EnvSlackColor     = "SLACK_COLOR"
 	EnvSlackUserName  = "SLACK_USERNAME"
 	EnvSlackFooter    = "SLACK_FOOTER"
+	EnvSlackThreadTs  = "SLACK_THREAD_TS"
 	EnvGithubActor    = "GITHUB_ACTOR"
 	EnvSiteName       = "SITE_NAME"
 	EnvHostName       = "HOST_NAME"
 	EnvMinimal        = "MSG_MINIMAL"
 	EnvSlackLinkNames = "SLACK_LINK_NAMES"
+)
+
+const (
+	OutputSlackThreadTs = "SLACK_THREAD_TS"
 )
 
 type Webhook struct {
@@ -35,6 +41,11 @@ type Webhook struct {
 	LinkNames   string       `json:"link_names,omitempty"`
 	UnfurlLinks bool         `json:"unfurl_links"`
 	Attachments []Attachment `json:"attachments,omitempty"`
+	ThreadTs    string       `json:"thread_ts,omitempty"`
+}
+
+type WebhookResponse struct {
+	ThreadTs    string       `json:"ts"`
 }
 
 type Attachment struct {
@@ -209,6 +220,7 @@ func main() {
 				Fields:     fields,
 			},
 		},
+		ThreadTs: os.Getenv(EnvSlackThreadTs),
 	}
 
 	if err := send(endpoint, msg); err != nil {
@@ -238,6 +250,28 @@ func send(endpoint string, msg Webhook) error {
 	if res.StatusCode >= 299 {
 		return fmt.Errorf("Error on message: %s\n", res.Status)
 	}
+
+	defer res.Body.Close()
+
+	bodyBytes, err := ioutil.ReadAll(res.Body)
+
+	//decoder := json.NewDecoder(bodyBytes)
+	var data WebhookResponse
+	json.Unmarshal([]byte(bodyBytes), &data)
+	// err = decoder.Decode(&data)
+
+	if err != nil {
+		return fmt.Errorf("Failed to parse response data: %s\n", err)
+	}
+	
+	fmt.Println(string(bodyBytes))
+
 	fmt.Println(res.Status)
+	setOutput(OutputSlackThreadTs, data.ThreadTs)
 	return nil
+}
+
+func setOutput(name string, value string) {
+	fmt.Printf("DEBUG name=%s::%s\n", name, value)
+	fmt.Printf("::set-output name=%s::%s\n", name, value)
 }
