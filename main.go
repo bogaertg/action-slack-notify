@@ -251,7 +251,7 @@ func send(endpoint string, msg Webhook) error {
 		return fmt.Errorf("Error on message: %s\n", res.Status)
 	}
 
-	defer res.Body.Close()
+	//defer res.Body.Close()
 
 	bodyBytes, err := ioutil.ReadAll(res.Body)
 
@@ -268,6 +268,7 @@ func send(endpoint string, msg Webhook) error {
 
 	fmt.Println(res.Status)
 	setOutput(OutputSlackThreadTs, data.ThreadTs)
+	defer res.Body.Close()
 	return nil
 }
 
