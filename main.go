@@ -250,7 +250,7 @@ func send(endpoint string, msg Webhook) error {
 	if res.StatusCode >= 299 {
 		return fmt.Errorf("Error on message: %s\n", res.Status)
 	}
-
+        fmt.Println(res.Body)
 	//defer res.Body.Close()
 
 	bodyBytes, err := ioutil.ReadAll(res.Body)
